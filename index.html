@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Name Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 1em;
+        }
+        .taken {
+            color: red;
+        }
+        .available {
+            color: green;
+        }
+        #summary {
+            margin-top: 20px;
+            text-align: left;
+            display: inline-block;
+            max-width: 300px;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Name Registration</h1>
+    
+    <!-- User's Name -->
+    <p>Enter your name to start registering names:</p>
+    <input type="text" id="userNameInput" placeholder="Your name here">
+    <button onclick="setUserName()">Submit</button>
+    <p id="userStatus"></p>
+
+    <!-- Name Input -->
+    <div id="nameInputSection" style="display:none;">
+        <p>Enter a name to check if it's available:</p>
+        <input type="text" id="nameInput" placeholder="Enter name here">
+        <button onclick="checkName()">Check Name</button>
+        <p id="status"></p>
+        <button onclick="showSummary()">📋 Bookmark - Show Name Counts</button>
+    </div>
+
+    <!-- Summary -->
+    <div id="summary" style="display:none;">
+        <h3>Name Registration Summary</h3>
+        <ul id="summaryList"></ul>
+    </div>
+
+    <!-- Reset Section -->
+    <div id="resetSection">
+        <h3>Reset Names</h3>
+        <p>Enter password to reset all names:</p>
+        <input type="password" id="resetPassword" placeholder="Password">
+        <button onclick="resetNames()">Reset</button>
+        <p id="resetStatus"></p>
+    </div>
+
+    <script>
+        // List to store registered names
+        const registeredNames = [];
+        const userRegistry = {}; // Tracks how many names each user added
+        let currentUser = null;
+
+        // Function to set the user's name
+        function setUserName() {
+            const userInput = document.getElementById('userNameInput').value.trim();
+            const userStatus = document.getElementById('userStatus');
+
+            if (userInput === "") {
+                userStatus.innerHTML = "Please enter your name.";
+                userStatus.className = "taken";
+                return;
+            }
+
+            currentUser = userInput.toLowerCase();
+            userStatus.innerHTML = `Welcome, ${userInput}! You can now register names.`;
+            userStatus.className = "available";
+            document.getElementById('nameInputSection').style.display = "block";
+        }
+
+        // Function to check and add names
+        function checkName() {
+            const inputField = document.getElementById('nameInput');
+            const statusField = document.getElementById('status');
+            const name = inputField.value.trim();
+
+            if (!currentUser) {
+                statusField.innerHTML = "You must enter your name first.";
+                statusField.className = "taken";
+                return;
+            }
+
+            if (name === "") {
+                statusField.innerHTML = "Please enter a name.";
+                statusField.className = "taken";
+                return;
+            }
+
+            if (registeredNames.includes(name.toLowerCase())) {
+                statusField.innerHTML = `"${name}" is already taken!`;
+                statusField.className = "taken";
+            } else {
+                registeredNames.push(name.toLowerCase());
+
+                // Update the user's count
+                if (!userRegistry[currentUser]) {
+                    userRegistry[currentUser] = 0;
+                }
+                userRegistry[currentUser]++;
+
+                statusField.innerHTML = `"${name}" is available and has been registered!`;
+                statusField.className = "available";
+                inputField.value = ""; // Clear the input field
+            }
+        }
+
+        // Function to show summary
+        function showSummary() {
+            const summarySection = document.getElementById('summary');
+            const summaryList = document.getElementById('summaryList');
+
+            summaryList.innerHTML = ""; // Clear old summary
+
+            for (const [user, count] of Object.entries(userRegistry)) {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${user}: ${count} names added`;
+                summaryList.appendChild(listItem);
+            }
+
+            summarySection.style.display = "block";
+        }
+
+        // Function to reset all names
+        function resetNames() {
+            const resetPassword = document.getElementById('resetPassword').value;
+            const resetStatus = document.getElementById('resetStatus');
+
+            if (resetPassword === "mamamikiego") {
+                registeredNames.length = 0;
+                for (let user in userRegistry) {
+                    delete userRegistry[user];
+                }
+                currentUser = null;
+
+                document.getElementById('userStatus').innerHTML = "";
+                document.getElementById('status').innerHTML = "";
+                document.getElementById('nameInputSection').style.display = "none";
+                document.getElementById('summary').style.display = "none";
+                resetStatus.innerHTML = "All names have been reset successfully!";
+                resetStatus.className = "available";
+                document.getElementById('resetPassword').value = ""; // Clear password field
+            } else {
+                resetStatus.innerHTML = "Incorrect password. Try again.";
+                resetStatus.className = "taken";
+            }
+        }
+    </script>
+</body>
+</html>
